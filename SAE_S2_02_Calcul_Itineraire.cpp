@@ -104,14 +104,14 @@ public:
 
 
 /// <summary>
-/// Permet de manipuler un sommet de graphe ‡ nommer.
+/// Permet de manipuler un sommet de graphe √† nommer.
 /// </summary>
 class sommet
 {
 
 protected:
 
-    char nom[27];
+    char* nom;
 
 public:
 
@@ -119,44 +119,57 @@ public:
     sommet()
 
     {
-        for (int i = 0; i < 25; i++)
-        { 
-            nom[i] = ' ';
-        }
-        
-        nom[25] = '\0';
+        nom = NULL;
     }
 
-    //constructeur avec nom prÈdÈfini
+    //constructeur avec nom pr√©d√©fini
     sommet(string chaine)
 
     {
-        int i=0;
 
-        while(i<chaine.length())
+        int nbchar = chaine.length();
+
+        nom = new char[nbchar + 1];
+
+        for (int i = 0; i < nbchar; i++)
         {
             nom[i] = chaine[i];
-            i++;
         }
 
-        nom[i] = '\0';
+        nom[nbchar] = '\0';
 
 
+    }
+
+    ~sommet()
+
+    {
+        delete nom;
     }
 
     sommet(const sommet& s)
 
     {
-        int i=0;
- 
-            while (i < 26 && nom[i] != '\0')
+
+        if (s.nom != NULL)
+        {
+
+            int nbchar = strlen(s.nom);
+
+            nom = new char[nbchar + 1];
+
+            for (int i = 0; i < nbchar; i++)
             {
                 nom[i] = s.nom[i];
-                i++;
             }
 
-            nom[i] = '\0';
- 
+            nom[nbchar] = '\0';
+        }
+        else
+        {
+            nom = NULL;
+        }
+
     }
 
 
@@ -169,17 +182,23 @@ public:
 
             int nbchar;
 
-            int i=0;
-
-            while (i < 26 && nom[i] != '\0')
-
+            if (s.nom != NULL)
             {
-                 nom[i] = s.nom[i];
-                 i++;
+
+                nbchar = strlen(s.nom);
+                nom = new char[nbchar + 1];
+
+
+                for (int i = 0; i < nbchar; i++)
+
+                {
+                    nom[i] = s.nom[i];
+                }
+
+                nom[nbchar] = '\0';
+
+
             }
-
-            nom[i] = '\0';
-
 
         }
 
@@ -187,7 +206,7 @@ public:
 
     }
 
-    const bool& operator== (const sommet &s)
+    const bool& operator== (const sommet& s)
     {
         if ((string)this->nom == (string)s.nom)
         {
@@ -197,7 +216,7 @@ public:
         {
             return false;
         }
-    
+
     }
 
     const bool& operator!= (const sommet& s)
@@ -213,6 +232,18 @@ public:
 
     }
 
+    bool egalite_securisee(sommet s) // la surcharge normale de l'√©galit√© peut provoquer des segfaults...
+    {
+        if ((string)this->nom == (string)s.nom)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
+    }
 
     void affiche()
 
@@ -223,6 +254,11 @@ public:
 
             cout << nom;
 
+        }
+        else
+        {
+
+            cout << "NULL";
         }
 
     }
@@ -238,7 +274,7 @@ public:
 };
 
 /// <summary>
-/// Permet de manipuler une liaison (non-orientÈe) entre deux sommets d'un graphe, valuÈes par un poids.
+/// Permet de manipuler une liaison (non-orient√©e) entre deux sommets d'un graphe, valu√©es par un poids.
 /// </summary>
 class arc
 {
@@ -318,16 +354,16 @@ public:
     }
 
     /// <summary>
-    /// Retourne le nom d'un sommet extrÈmitÈ en fonction du type demandÈ passÈ en paramËtre.
+    /// Retourne le nom d'un sommet extr√©mit√© en fonction du type demand√© pass√© en param√®tre.
     /// </summary>
-    /// <param name="type">string : chaÓne de caracteres ("depart" ou "arrivee").</param>
-    /// <returns>Le nom de l'extrÈmitÈ demandÈe.</returns>
-    string recup_sommetnom(string type) 
-    
+    /// <param name="type">string : cha√Æne de caracteres ("depart" ou "arrivee").</param>
+    /// <returns>Le nom de l'extr√©mit√© demand√©e.</returns>
+    string recup_sommetnom(string type)
+
     {
         string nomsommet;
 
-        if (type=="depart")
+        if (type == "depart")
         {
             nomsommet = somdepart.collectnom();
         }
@@ -342,10 +378,10 @@ public:
     }
 
     /// <summary>
-    /// Retourne un sommet extrÈmitÈ en fonction du nom de sommet passÈ en paramËtre.
+    /// Retourne un sommet extr√©mit√© en fonction du nom de sommet pass√© en param√®tre.
     /// </summary>
-    /// <param name="type">const char* : chaÓne de caracteres.</param>
-    /// <returns>L'objet sommet demandÈ (s'il existe), sinon un sommet vide.</returns>
+    /// <param name="type">const char* : cha√Æne de caracteres.</param>
+    /// <returns>L'objet sommet demand√© (s'il existe), sinon un sommet vide.</returns>
     sommet recup_sommetobj(const char* nomsommet)
 
     {
@@ -398,9 +434,9 @@ public:
     }
 
     /// <summary>
-    /// VÈrifie si cet arc a comme l'une de ses extrÈmitÈs le sommet passÈ en paramËtre.
+    /// V√©rifie si cet arc a comme l'une de ses extr√©mit√©s le sommet pass√© en param√®tre.
     /// </summary>
-    /// <param name="type">const char* : chaÓne de caracteres.</param>
+    /// <param name="type">const char* : cha√Æne de caracteres.</param>
     /// <returns>true ou false.</returns>
     bool sommet_existe(const char* nomsommet)
 
@@ -412,6 +448,15 @@ public:
         int i;
 
         i = 0;
+
+        if(res_som_a==NULL || res_som_d==NULL)
+        {
+            return false;
+        }
+        else
+        {
+
+
 
         while (res_som_d[i] != '\0' && nomsommet[i] != '\0')
 
@@ -445,13 +490,14 @@ public:
         {
             return false;
         }
+        }
     }
 
     /// <summary>
-    /// Retourne le sommet ‡ l'opposÈ du nom de sommet passÈ en paramËtre.
+    /// Retourne le sommet √† l'oppos√© du nom de sommet pass√© en param√®tre.
     /// </summary>
-    /// <param name="type">const char* : chaÓne de caracteres.</param>
-    /// <returns>L'objet sommet demandÈ (s'il existe), sinon un sommet vide.</returns>
+    /// <param name="type">const char* : cha√Æne de caracteres.</param>
+    /// <returns>L'objet sommet demand√© (s'il existe), sinon un sommet vide.</returns>
     sommet recup_inversesommetobj(const char* nomsommet)
 
     {
@@ -465,10 +511,13 @@ public:
 
         i = 0;
 
-        while (res_som_d[i] != '\0' && nomsommet[i] != '\0') 
-        
+        if(res_som_a!=NULL || res_som_d!=NULL)
         {
-            if (res_som_d[i] != nomsommet[i]) 
+
+        while (res_som_d[i] != '\0' && nomsommet[i] != '\0')
+
+        {
+            if (res_som_d[i] != nomsommet[i])
             {
                 depart_egal = false;
             }
@@ -498,39 +547,40 @@ public:
         {
             somrecup = somdepart;
         }
+        }
 
         return somrecup;
 
     }
 
     /// <summary>
-    /// VÈrifie si deux arcs sont reliÈs ‡ un mÍme sommet et le retourne s'il existe.
+    /// V√©rifie si deux arcs sont reli√©s √† un m√™me sommet et le retourne s'il existe.
     /// </summary>
     /// <param name="type">arc</param>
-    /// <returns>L'objet sommet demandÈ (s'il existe), sinon un sommet vide.</returns>
+    /// <returns>L'objet sommet demand√© (s'il existe), sinon un sommet vide.</returns>
     sommet recup_sommetencommun(arc bis)
     {
-        sommet final;
+        sommet som_final;
         sommet recup_d = bis.recup_sommetobj(somdepart.collectnom());
         sommet recup_a = bis.recup_sommetobj(somarriv.collectnom());
 
         //regarde si bis contient somdepart
 
-        if (recup_d.collectnom() != NULL) 
+        if (recup_d.collectnom() != NULL)
         {
-            final = recup_d;
+            som_final = recup_d;
         }
 
         //regarde si bis contient somarriv
 
         if (recup_a.collectnom() != NULL)
         {
-            final = recup_a;;
+            som_final = recup_a;;
         }
 
-        return final;
+        return som_final;
     }
-    
+
 
     int recup_poids()
 
@@ -542,8 +592,8 @@ public:
 
 
 /// <summary>
-/// Permet de manipuler simplement un graphe ‡ l'aide de sommets et d'arcs. 
-/// Contient diffÈrentes mÈthodes pour mieux visualiser et utiliser les connexions. 
+/// Permet de manipuler simplement un graphe √† l'aide de sommets et d'arcs.
+/// Contient diff√©rentes m√©thodes pour mieux visualiser et utiliser les connexions.
 /// </summary>
 class graphe
 
@@ -576,7 +626,7 @@ public:
 
     }
 
-    //constructeur de recopie 
+    //constructeur de recopie
 
     graphe(const graphe& g)
     {
@@ -601,7 +651,7 @@ public:
 
     }
 
-    //surcharge de l'ÈgalitÈ
+    //surcharge de l'√©galit√©
 
     graphe& operator= (const graphe& g)
     {
@@ -844,7 +894,7 @@ public:
     //manipulation des sommets
 
     /// <summary>
-    /// Affiche tous les sommets du graphe demandÈ.
+    /// Affiche tous les sommets du graphe demand√©.
     /// </summary>
     void listepoints_affiche()
     {
@@ -859,7 +909,7 @@ public:
 
 
     /// <summary>
-    /// Affiche tous les arcs du graphe partant d'un sommet demandÈ.
+    /// Affiche tous les arcs du graphe partant d'un sommet demand√©.
     /// </summary>
     /// <param name="pointdepart">: le nom du sommet dont on souhaite donner la liste.</param>
     void listeconnexions_affiche(const string pointdepart)
@@ -888,7 +938,7 @@ public:
 
 
     /// <summary>
-    /// Affiche tous les arcs du graphe partant d'un sommet demandÈ.
+    /// Affiche tous les arcs du graphe partant d'un sommet demand√©.
     /// </summary>
     /// <param name="pointdepart">: le sommet dont on souhaite donner la liste.</param>
     void listeconnexions_affiche(sommet pointdepart)
@@ -919,7 +969,7 @@ public:
 
 
     /// <summary>
-    /// Retourne les nombre d'arcs du graphe partant d'un sommet demandÈ.
+    /// Retourne les nombre d'arcs du graphe partant d'un sommet demand√©.
     /// </summary>
     /// <param name="pointdepart">: le nom du sommet dont on souhaite utiliser la liste.</param>
     int listeconnexions_copie(sommet pointdepart)
@@ -951,7 +1001,7 @@ public:
     }
 
     /// <summary>
-    /// Compte et cnstitue la liste de tous les arcs du graphe partant d'un sommet demandÈ.
+    /// Compte et cnstitue la liste de tous les arcs du graphe partant d'un sommet demand√©.
     /// </summary>
     /// <param name="pointdepart">: le nom du sommet dont on souhaite donner la liste.</param>
     /// <param name="liste">: le tableau d'arc vers lequel on souhaite extraire la liste.</param>
@@ -991,7 +1041,7 @@ public:
     }
 
     /// <summary>
-    /// Compte et cnstitue la liste de tous les arcs du graphe partant d'un sommet demandÈ.
+    /// Compte et constitue la liste de tous les arcs du graphe partant d'un sommet demand√©.
     /// </summary>
     /// <param name="pointdepart">: le sommet dont on souhaite donner la liste.</param>
     /// <param name="liste">: le tableau d'arc vers lequel on souhaite extraire la liste.</param>
@@ -1032,9 +1082,9 @@ public:
 
 
     /// <summary>
-    /// Calcule le chemin le plus court pour aller d'un sommet ‡ un autre et donne les sommets par lequels passer + le poids minimal.
+    /// Calcule le chemin le plus court pour aller d'un sommet √† un autre et donne les sommets par lequels passer + le poids minimal.
     /// </summary>
-    /// <param name="T">: Le couple dÈpart/arrivÈe utilisÈ pour calculer l'itinÈraire.</param>
+    /// <param name="T">: Le couple d√©part/arriv√©e utilis√© pour calculer l'itin√©raire.</param>
     void dijkstra(trajet T)
     {
 
@@ -1043,46 +1093,45 @@ public:
         int i;
         int nbconnexions;
         arc connexions_nbarcs[256]; // l'ensemble de tous les arcs
-                                    // note : on a dÈcidÈ de le faire en statique pour des raisons de simplicitÈ de code
+                                    // note : on a d√©cid√© de le faire en statique pour des raisons de simplicit√© de code
 
         int* ecart = new int[nbsommets];
-        sommet* precedent = new sommet[nbsommets]; // la liste de tous les sommets "prÈcÈdents" ‡ une Ètape T
+        sommet* precedent = new sommet[nbsommets]; // la liste de tous les sommets "pr√©c√©dents" √† une √©tape T
 
-        sommet* deja_visite = new sommet[nbsommets]; // la liste de tous les sommets dÈj‡ visitÈs ‡ une Ètape T
+        sommet* deja_visite = new sommet[nbsommets]; // la liste de tous les sommets d√©j√† visit√©s √† une √©tape T
 
 
         for (i = 1; i < nbsommets; i++)
         {
-            ecart[i] = 9999999; // en pseudo-code, correspond ‡ +infini
+            ecart[i] = 9999999; // en pseudo-code, correspond √† +infini
         }
 
-        ecart[0] = 0; // le sommet initial est distant de 0 de lui-mÍme...
+        ecart[0] = 0; // le sommet initial est distant de 0 de lui-m√™me...
 
-        int cptecart = 1; //on compte les Ètapes ‡ partir de 1 pour des raisons de calcul
+        int cptecart = 1; //on compte les √©tapes √† partir de 1 pour des raisons de calcul
 
-        /* On rÈcupËre T.stationdebut : Áa permettra ainsi de dÈbuter l'algorithme */
+        /* On r√©cup√®re T.stationdebut : √ßa permettra ainsi de d√©buter l'algorithme */
 
         sommet u(T.depart_recup());
 
         sommet a(T.arrivee_recup());
 
-
-        while (u!=a) // tant que le sommet sÈlectionnÈ est diffÈrent de celui de fin :
+        while (!(u.egalite_securisee(a))) // tant que le sommet s√©lectionn√© est diff√©rent de celui de fin :
         {
 
             nbconnexions = listeconnexions_copie(u, connexions_nbarcs);
 
             i = 0;
 
-            while(i < nbconnexions)
+            while (i < nbconnexions)
             {
-   
+
                 int distance_alternative;
 
 
                 if (deja_visite[i].collectnom() != NULL)
                 {
-                    if ((connexions_nbarcs[i].sommet_existe(deja_visite[i].collectnom()))) //on saute un arc s'il est dÈj‡ visitÈ
+                    if ((connexions_nbarcs[i].sommet_existe(deja_visite[i].collectnom()))) //on saute un arc s'il est d√©j√† visit√©
                     {
                         i++;
                     }
@@ -1091,22 +1140,22 @@ public:
                     {
                         break;
 
-                        //pas trËs ÈlÈgant, mais c'est pour dire qu'il faut s'arrÍter dËs qu'on a trouvÈ le sommet destination.
+                        //pas tr√®s √©l√©gant, mais c'est pour dire qu'il faut s'arr√™ter d√®s qu'on a trouv√© le sommet destination.
                     }
                 }
 
-                
-                        distance_alternative = ecart[cptecart - 1] + connexions_nbarcs[i].recup_poids(); //addition ecart actuel et poids supplementaire de la liste
 
-                        if (distance_alternative < ecart[cptecart])
+                distance_alternative = ecart[cptecart - 1] + connexions_nbarcs[i].recup_poids(); //addition ecart actuel et poids supplementaire de la liste
 
-                        {
-                        ecart[cptecart] = distance_alternative;
-                        precedent[cptecart - 1] = u;
+                if (distance_alternative < ecart[cptecart])
 
-                        }
-                  
-                
+                {
+                    ecart[cptecart] = distance_alternative;
+                    precedent[cptecart - 1] = u;
+
+                }
+
+
 
                 i++;
             }
@@ -1115,22 +1164,22 @@ public:
 
             deja_visite[cptecart - 1] = u;
 
-            //On rÈcupÈre le u de distance la plus petite
+            //On r√©cup√©re le u de distance la plus petite
 
 
-                u = connexions_nbarcs[i - 1].recup_inversesommetobj(u.collectnom());
+            u = connexions_nbarcs[i - 1].recup_inversesommetobj(u.collectnom());
 
-                if (i >= nbconnexions)
-                {
-                    i=nbconnexions-1;
-                }
-                if (connexions_nbarcs[i].sommet_existe(T.arrivee_recup())) //si le sommet trouvÈ est celui qui achËve le chemin
-                {
-                    sommet fin(T.arrivee_recup());
-                    u = fin;
-                    precedent[cptecart-1] = u;
+            if (i >= nbconnexions)
+            {
+                i = nbconnexions - 1;
+            }
+            if (connexions_nbarcs[i].sommet_existe(T.arrivee_recup())) //si le sommet trouv√© est celui qui ach√®ve le chemin
+            {
+                sommet fin(T.arrivee_recup());
+                u = fin;
+                precedent[cptecart - 1] = u;
 
-                }
+            }
 
         }
 
@@ -1150,12 +1199,12 @@ public:
 
         }
 
-        cout << "temps total de trajet : " << ecart[cptecart-1] << " minutes" << endl;
+        cout << "temps total de trajet : " << ecart[cptecart - 1] << " minutes" << endl;
     }
 
 
 
- };
+};
 
 
 
@@ -1210,9 +1259,9 @@ int main()
     G.affichesommet();
     G.affichearc();
 
-    trajet T("Delacroix", "Jacques Brel");
+    trajet T("Etangs Noirs", "Osseghem");
 
-    G.dijkstra(T); //ATTENTION : sujet ‡ 
+    G.dijkstra(T); //ATTENTION : sujet √† crash
 
 
     return 0;
